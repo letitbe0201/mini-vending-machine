@@ -1,45 +1,156 @@
-module ee271_final_proj_vendingmachine_tb();
-  reg        clk, confirm, cancel;
-  reg  [2:0] coin;
-  reg  [2:0] item_sel;
-  reg  [1:0] amt_sel;
-  wire [1:0] a_amt, b_amt, c_amt, d_amt, e_amt;
-  wire [5:0] a_chg, b_chg, c_chg, d_chg, e_chg;
-  wire [2:0] item_name;
-  wire [1:0] item_amt;
-  wire [5:0] change;
-  wire [4:0] state, next_state;
+module ee271_final_proj_v2_tb ();
+  reg       tclk, tcancel, tcontinue;
+  reg [2:0] titem_sel;
+  reg [1:0] tamt_sel;
+  reg       tDIME;
+  reg       tQUATER;
+  reg       tDOLLAR;
 
-  ee271_final_proj_vendingmachine test(clk, confirm, cancel, coin, item_sel, amt_sel, a_amt, b_amt, c_amt, d_amt, e_amt, a_chg, b_chg, c_chg, d_chg, e_chg, item_name, item_amt, change, state, next_state);
-  
+  wire [2:0] tstate, tnext_state;
+  wire [9:0] tcollected;
+  wire [9:0] tchange;
+  wire [2:0] titem;
+  wire [1:0] tamt;
+  wire [2:0] tdelivery;
+
+  ee271_final_proj_v2 test(.clk(tclk), .cancel(tcancel), .continue(tcontinue), .item_sel(titem_sel), .amt_sel(tamt_sel), .DIME(tDIME), .QUATER(tQUATER), .DOLLAR(tDOLLAR), .state(tstate), .next_state(tnext_state), .collected(tcollected), .change(tchange), .item(titem), .amt(tamt), .delivery(tdelivery));
+
   initial begin
-    $monitor("b_amt: %d, State: %d, next_state: %d, Item: %d, Amount: %d, Change: %d @ %0t", b_amt, state, next_state, item_name, item_amt, change, $time);
-    $dumpfile("ee271_final_proj_vendingmachine.vcd");
-    $dumpvars();
-    #200 disable clock_loop;
-    $finish;
+    #6
+    titem_sel = 5;
+    #3
+    titem_sel = 0;
+    #12
+    tDIME = 1;
+    #3
+    tDIME = 0;
+    #8
+    tQUATER = 1;
+    #3
+    tQUATER = 0;
+    #10
+    tcancel = 1;
+    #3
+    tcancel = 0;
+    #5
+    tcontinue = 1;
+    #3
+    tcontinue = 0;
+    #10
+    tDOLLAR = 1;
+    #3
+    tDOLLAR = 0;
+    #4
+    tamt_sel = 3;
+    #3
+    tamt_sel = 0;
+    #10
+    tcancel = 1;
+    #3
+    tcancel = 0;
+    #18
+    tcontinue = 1;
+    #3
+    tcontinue = 0;
+    #9
+    titem_sel = 4;
+    #3
+    titem_sel = 0;
+    #7
+    tamt_sel = 2;
+    #3
+    tamt_sel = 0;
+    #15
+    tDOLLAR = 1;
+    #3
+    tDOLLAR = 0;
+    #15
+    tDOLLAR = 1;
+    #3
+    tDOLLAR = 0;
+    #15
+    tDOLLAR = 1;
+    #3
+    tDOLLAR = 0;
+    #9
+    tcontinue = 1;
+    #3
+    tcontinue = 0;
+    #6
+    //tQUATER = 1;
+    #3
+    //tQUATER = 0;
+    #4
+    tcancel = 1;
+    #3
+    tcancel = 0;
+    #5
+    tcontinue = 1;
+    #3
+    tcontinue = 0;
+    #6
+    tcancel = 1;
+    #3
+    tcancel = 0;
+    #8
+    tDIME = 1;
+    #3
+    tDIME = 0;
+    #10
+    titem_sel = 5;
+    #3
+    titem_sel = 0;
+    #5
+    tDOLLAR = 1;
+    #3
+    tDOLLAR = 0;
+    #6
+    tamt_sel = 2;
+    #3
+    tamt_sel = 0;
+    #8
+    titem_sel = 2;
+    #3
+    titem_sel = 0;
+    #4
+    tDOLLAR = 1;
+    #3
+    tDOLLAR = 0;
+    #5
+    //tcancel = 1;
+    #3
+    //tcancel = 0;
+    #4
+    tDOLLAR = 1;
+    #3
+    tDOLLAR = 0;
+    #10
+    tcancel = 1;
+    #3
+    tcancel = 0;
+    #10
+    tcontinue = 1;
+    #3
+    tcontinue = 0;
+
+
+
+
   end
 
-  initial begin: clock_loop
-    clk = 0;
+  initial begin : clock_loop
+    tclk = 0;
     forever begin
-      #1 clk = 1;
-      #1 clk = 0;
+      #1 tclk = 1;
+      #1 tclk = 0;
     end
   end
-
+  
   initial begin
-    #5 item_sel = 3'b010;
-    #3 amt_sel = 2'b10;
-    //#2 coin = 3'b100;
-    #6 coin = 3'b010;
-    #2 coin = 3'b010;
-    #4 coin = 3'b000;
+    $monitor("collected: %d | item: %d | delivery: %d | change: %d | @ %0t", tcollected, titem, tdelivery, tchange, $time);
+    $dumpfile("ee271_final_proj_v2_tb.vcd");
+    $dumpvars();
+    #400 disable clock_loop;
     $finish;
-    //#1 coin = 3'b001;
-    //#2 coin = 3'b010;
-    //#100 cancel = 1;
-    //#2 cancel = 0;
   end
-
 endmodule
