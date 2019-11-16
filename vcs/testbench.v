@@ -12,8 +12,9 @@ module ee271_final_proj_v2_tb ();
   wire [2:0] titem;
   wire [1:0] tamt;
   wire [2:0] tdelivery;
+  wire       tinsert_en;
 
-  ee271_final_proj_v2 test(.clk(tclk), .cancel(tcancel), .continue(tcontinue), .item_sel(titem_sel), .amt_sel(tamt_sel), .DIME(tDIME), .QUATER(tQUATER), .DOLLAR(tDOLLAR), .state(tstate), .next_state(tnext_state), .collected(tcollected), .change(tchange), .item(titem), .amt(tamt), .delivery(tdelivery));
+  ee271_final_proj_v2_2 test(.clk(tclk), .cancel(tcancel), .continue(tcontinue), .item_sel(titem_sel), .amt_sel(tamt_sel), .DIME(tDIME), .QUATER(tQUATER), .DOLLAR(tDOLLAR), .state(tstate), .next_state(tnext_state), .collected(tcollected), .change(tchange), .item(titem), .amt(tamt), .delivery(tdelivery), .insert_en(tinsert_en));
 
   initial begin
     #6
@@ -117,6 +118,10 @@ module ee271_final_proj_v2_tb ();
     #3
     tDOLLAR = 0;
     #5
+    tcontinue = 1;
+    #2
+    tcontinue = 0;
+    
     //tcancel = 1;
     #3
     //tcancel = 0;
@@ -148,7 +153,7 @@ module ee271_final_proj_v2_tb ();
   
   initial begin
     $monitor("collected: %d | item: %d | delivery: %d | change: %d | @ %0t", tcollected, titem, tdelivery, tchange, $time);
-    $dumpfile("ee271_final_proj_v2_tb.vcd");
+    $dumpfile("ee271_final_proj_v2_2_tb.vcd");
     $dumpvars();
     #400 disable clock_loop;
     $finish;
