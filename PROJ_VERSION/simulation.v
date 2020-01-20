@@ -1,47 +1,44 @@
-module ee271_final_proj_v2_9 (clk, cancel, continue_, item_sel, amt_sel, DIME, QUATER, DOLLAR, col_seven_1, col_seven_2, col_seven_3, ch_seven_1, ch_seven_2, ch_seven_3, item_A, item_B, item_C, item_D, amt_out);
+module simulation (clk, cancel, continue_, item_sel, amt_sel, DIME, QUATER, DOLLAR, col_seven_1, col_seven_2, col_seven_3, ch_seven_1, ch_seven_2, ch_seven_3, item_LED, amt_LED, state, next_state, collected, change);
 
-	// Should be okay if fix the problem of fast clock over collected and change calculations
 	
 	// cancel: cancel the transaction and return the collected money
 	// continue: reset everything after one purchase has been done
 	// collected: signal the system that the required amount of money has been inserted
 	input       clk, cancel, continue_;
-	input [3:0] item_sel;
+	input [4:0] item_sel;
 	input [2:0] amt_sel;
 	input       DIME;
 	input       QUATER;
 	input       DOLLAR;
 
-			 reg sclk;
-			 reg [19:0] count;
-	       reg [2:0] state, next_state;
-	       reg [2:0] delivery;
+		   reg sclk;
+		   reg [19:0] count;
+	output reg [2:0]  state, next_state;
+	       reg [2:0]  delivery;
 	// when 0: unable to insert coin;
-	       reg       insert_en;
+	       reg        insert_en;
 	// Display collected money on Seven segment LED
-	       reg [31:0]collected;
-	       reg [31:0]col_temp;
-	       reg [31:0]col_mod;
-	output reg [7:0] col_seven_1;   // 0.
-	output reg [7:0] col_seven_2;   // 0
-	output reg [7:0] col_seven_3;   // 0
+	       reg		  add_finish;
+	       reg		  col_finish;
+	output reg [31:0] collected;
+	       reg [31:0] col_temp;
+	       reg [31:0] col_mod;
+	output reg [7:0]  col_seven_1;   // 0.
+	output reg [7:0]  col_seven_2;   // 0
+	output reg [7:0]  col_seven_3;   // 0
 	// Display change on seven segment LED
-	       reg [31:0]change;
-	       reg [31:0]ch_temp;
-	       reg [31:0]ch_mod;
-	output reg [7:0] ch_seven_1;   // 0.
-	output reg [7:0] ch_seven_2;   // 0
-	output reg [7:0] ch_seven_3;   // 0
+	output reg [31:0] change;
+	       reg [31:0] ch_temp;
+	       reg [31:0] ch_mod;
+	output reg [7:0]  ch_seven_1;   // 0.
+	output reg [7:0]  ch_seven_2;   // 0
+	output reg [7:0]  ch_seven_3;   // 0
 	// Display item
-	       reg [2:0] item;
-	output reg       item_A;
-	output reg       item_B;
-	output reg       item_C;
-	output reg       item_D;
-	       reg       item_E;
+	       reg [2:0]  item;
+	output reg [4:0]  item_LED;////
 	// Display amt selection
-	       reg [1:0] amt;
-	output reg [2:0] amt_out;
+	       reg [1:0]  amt;
+	output reg [2:0]  amt_LED;
 	// TODO Display item delivery
 
 	// Items
@@ -52,11 +49,11 @@ module ee271_final_proj_v2_9 (clk, cancel, continue_, item_sel, amt_sel, DIME, Q
 	parameter [3:0] E = 4'b0101;
 	
 	// Price of products (cent)
-	parameter price_A = 50;
-	parameter price_B = 80;
-	parameter price_C = 100;
-	parameter price_D = 120;
-	parameter price_E = 150;
+	parameter price_A = 10'd50;
+	parameter price_B = 10'd80;
+	parameter price_C = 10'd100;
+	parameter price_D = 10'd120;
+	parameter price_E = 10'd150;
 	
 	// States
 	parameter [2:0] S0 = 0;	// Idle state
@@ -75,7 +72,9 @@ module ee271_final_proj_v2_9 (clk, cancel, continue_, item_sel, amt_sel, DIME, Q
 		// when 0: unable to insert coin;
 		insert_en = 0;
 		// Display collected money on Seven segment LED
-	        collected = 32'b0;
+		add_finish = 0;
+		col_finish = 0;
+	    collected = 32'b0;
 		col_seven_1 = 8'b01000000;   // 0.
 		col_seven_2 = 8'b11000000;   // 0
 		col_seven_3 = 8'b11000000;   // 0
@@ -86,38 +85,123 @@ module ee271_final_proj_v2_9 (clk, cancel, continue_, item_sel, amt_sel, DIME, Q
 		ch_seven_3 = 8'b11000000;   // 0
 		// Display item
 		item = 3'b0;
-		item_A = 0;
-		item_B = 0;
-		item_C = 0;
-		item_D = 0;
-		item_E = 0;
+		item_LED = 5'b0;
 		// Display amt selection
 		amt = 2'b01;
-		amt_out = 3'b001;
+		amt_LED = 3'b001;
 	end
 
 
 	// Calculating the collected amount of money
 	always @ (DIME or QUATER or DOLLAR or state)
 	begin
+		add_finish = 0;
 		if (insert_en && (state != S0) && (state != S6))
 		begin
-			if (DIME) collected = collected + 10;
-			else if (QUATER) collected = collected + 25;
-			else if (DOLLAR) collected = collected + 100;
-			//else collected = collected;
+			if (~DIME) 
+			begin
+				collected = collected + 10;
+				add_finish = 1;
+			end
+			else if (~QUATER) 
+			begin
+				collected = collected + 25;
+				add_finish = 1;
+			end
+			else if (~DOLLAR)
+			begin	
+				collected = collected + 100;
+				add_finish = 1;
+			end
 		end
 		// Reset collected when at S0 and S6
-		if ((state == S0) || (state == S6)) collected = 0;
+		if (state == S0) collected = 0;
 	end
 
+	// Comparing the price to collected money
+	task comp;
+	begin
+		col_finish = 0;
+		if (add_finish)
+		begin
+			case (item)
+				A:
+				begin
+					case (amt)
+						1:
+						begin
+							if (collected >= 10'd50)
+							begin
+								change = collected - 10'd50;
+								col_finish = 1;
+							end
+						end
+						2:
+						begin
+							if (collected >= 10'd100)
+							begin
+								change = collected - 10'd100;
+								col_finish = 1;
+							end
+						end
+						3:
+						begin
+							if (collected >= 10'd150)
+							begin
+								change = collected - 10'd150;
+								col_finish = 1;
+							end
+						end
+						default:
+						begin
+							if (collected >= 10'd50)
+							begin
+								change = collected - 10'd50;
+								col_finish = 1;
+							end
+						end
+					endcase
+				end
+				B:
+				begin
+					if (collected >= (price_B*amt))
+					begin
+						change = collected - (price_B*amt);
+						col_finish = 1;
+					end
+				end
+				C:
+				begin
+					if (collected >= (price_C*amt))
+					begin
+						change = collected - (price_C*amt);
+						col_finish = 1;
+					end
+				end
+				D:
+				begin
+					if (collected >= (price_D*amt))
+					begin
+						change = collected - (price_D*amt);
+						col_finish = 1;
+					end
+				end
+				//E:
+				default:
+				begin
+					col_finish = 0;
+				end
+			endcase
+		end
+	end
+	endtask
 
 	// Finite (seven) state machine
 	always @ (*)
 	begin		
 		// If the cancel button is pressed, reset everything and return the
 		// money; If the state is S6, do nothing
-		if (!cancel && (state != S6))
+		if (cancel && (state != S6))
 		begin
 			insert_en = 0;
 			item = 0;
@@ -149,11 +233,11 @@ module ee271_final_proj_v2_9 (clk, cancel, continue_, item_sel, amt_sel, DIME, Q
 					// triggered when an item is selected (assign the input to item)
 					// ///////////
 					case (item_sel)
-						4'b1000: item = A;
-						4'b0100: item = B;
-						4'b0010: item = C;
-						4'b0001: item = D;
-						//5'b00001: item = E;
+						5'b01000: item = D;
+						5'b00100: item = C;
+						5'b00010: item = B;
+						5'b00001: item = A;
+						5'b10000: item = E;
 						default:;
 					endcase
 					case (item)
@@ -181,13 +265,11 @@ module ee271_final_proj_v2_9 (clk, cancel, continue_, item_sel, amt_sel, DIME, Q
 							default:;
 						endcase
 					end
+					// TASK COMPARING THE PRICE TO MONEY
+					// COLLECTED
+					comp();
 					// If the collected money exceeds the price
-					if (collected >= price_A * amt)
-					begin
-						change = collected - price_A * amt;
-						next_state = S6;
-						delivery = 1;
-					end
+					if (col_finish) next_state = S6;
 					else next_state = S1;
 				end
 				S2:
@@ -280,7 +362,7 @@ module ee271_final_proj_v2_9 (clk, cancel, continue_, item_sel, amt_sel, DIME, Q
 					// Disenable inserting coins
 					insert_en = 0;
 					// proceed to another purchase if the user press continue button (build a clock???)
-					if (!continue_)
+					if (continue_)
 					begin
 						next_state = S0;
 						insert_en = 0;
@@ -415,25 +497,14 @@ module ee271_final_proj_v2_9 (clk, cancel, continue_, item_sel, amt_sel, DIME, Q
 		case(item)
 			0:
 			begin
-				item_A = 0;
-				item_B = 0;
-				item_C = 0;
-				item_D = 0;
-				item_E = 0;
+				item_LED = 5'b0;
 			end
-			A: item_A = 1;
-			B: item_B = 1;
-			C: item_C = 1;
-			D: item_D = 1;
-			E: item_E = 1;
-			default:
-			begin
-				item_A = 0;
-				item_B = 0;
-				item_C = 0;
-				item_D = 0;
-				item_E = 0;
-			end
+			A: item_LED = 5'b00001;
+			B: item_LED = 5'b00010;
+			C: item_LED = 5'b00100;
+			D: item_LED = 5'b01000;
+			E: item_LED = 5'b10000;
+			default: item_LED = 5'b0;
 
 		endcase
 	end
@@ -442,14 +513,13 @@ module ee271_final_proj_v2_9 (clk, cancel, continue_, item_sel, amt_sel, DIME, Q
 	always @ (amt)
 	begin
 		case(amt)
-			1: amt_out = 3'b001;
-			2: amt_out = 3'b010; 
-			3: amt_out = 3'b100;
-			default: amt_out = 3'b001;
+			1: amt_LED = 3'b001;
+			2: amt_LED = 3'b010; 
+			3: amt_LED = 3'b100;
+			default: amt_LED = 3'b001;
 		endcase
 	end
-	
-	// TODO Display the delivery of item (blinking item LED)
+
 		
 	// State machine drived by 100 Hz Clock
 	always @ (posedge sclk)
@@ -460,7 +530,7 @@ module ee271_final_proj_v2_9 (clk, cancel, continue_, item_sel, amt_sel, DIME, Q
 	// 50 MHz clock
 	always @ (posedge clk)
 	begin
-		if (count != 20'b01111010000100100000)
+		if (count != 20'b00000000000000000010)
 			count = count + 1;
 		else
 		begin
