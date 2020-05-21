@@ -8,7 +8,7 @@ PORTS, REGISTERS AND PARAMETERS
 	// CANCEL: Cancel the transaction and return the collected money
 	// CONTINUE_: Continue to another purchase
 	// COLLECTED: Keep record on collected money
-	input				clk, cancel, continue_;
+	input			clk, cancel, continue_;
 	input	   [4:0]	item_sel;
 	input	   [2:0]	amt_sel;
 	input	   [3:0]	pad_Row;
@@ -23,27 +23,27 @@ PORTS, REGISTERS AND PARAMETERS
 	output reg [2:0]	amt_LED;
 	output reg [3:0]	pad_Col;
 
-	reg		  [2:0]		COIN;
-	reg		  [2:0]		state, next_state;
+	reg [2:0] COIN;
+	reg [2:0] state, next_state;
 	// CLOCK for STATE MACHINE
-	reg					sclk;
-	reg		  [31:0]	count;
-	reg		  [23:0]	count_pad;
+	reg sclk;
+	reg	[31:0] count;
+	reg	[23:0] count_pad;
 	// When 0: Disable inserting coins
-	reg					insert_en;
+	reg	insert_en;
 	// Display collected money on Seven segment LED
-	reg					col_finish;
-	reg					col_rst;
-	reg		  [31:0]	collected;
-	reg		  [31:0]	col_temp;
-	reg		  [31:0]	col_mod;
+	reg	col_finish;
+	reg	col_rst;
+	reg	[31:0] collected;
+	reg	[31:0] col_temp;
+	reg	[31:0] col_mod;
 	// Display change on seven segment LED
-	reg		  [31:0]	change;
-	reg		  [31:0]	ch_temp;
-	reg		  [31:0]	ch_mod;
+	reg	[31:0] change;
+	reg	[31:0] ch_temp;
+	reg	[31:0] ch_mod;
 	// Store value of ITEM and AMOUNT
-	reg		  [2:0]		item;
-	reg		  [1:0]		amt;
+	reg	[2:0] item;
+	reg	[1:0] amt;
 	
 	// ITEMS
 	parameter  [3:0]	A = 4'b0001;
@@ -73,30 +73,30 @@ PORTS, REGISTERS AND PARAMETERS
 INITIALIZE EVERYTHING
 */
 	initial begin
-		col_seven_1 	= 8'b01000000;		// 0.
-		col_seven_2		= 8'b11000000;		// 0
-		col_seven_3		= 8'b11000000;		// 0
-		ch_seven_1		= 8'b01000000;		// 0.
-		ch_seven_2		= 8'b11000000;		// 0
-		ch_seven_3  	= 8'b11000000;		// 0
-		amt_LED			= 3'b001;			// Default amount: 1
-		item_LED			= 5'b0;
-		COIN           = 3'b111;
-		state				= S0;
-		sclk				= 0;
-		count				= 0;
-		count_pad      = 20'b0;
-		insert_en		= 0;
-		col_finish		= 0;
-		col_rst			= 0;
-	 	collected		= 32'b0;
-		col_temp			= 0;
-		col_mod			= 0;
-		change			= 32'b0;
-		ch_temp			= 0;
-		ch_mod			= 0;
-		item				= 3'b0;
-		amt				= 2'b01;
+		col_seven_1 = 8'b01000000;  // 0.
+		col_seven_2	= 8'b11000000;  // 0
+		col_seven_3	= 8'b11000000;  // 0
+		ch_seven_1 = 8'b01000000;   // 0.
+		ch_seven_2 = 8'b11000000;   // 0
+		ch_seven_3 = 8'b11000000;   // 0
+		amt_LED	= 3'b001;           // Default amount: 1
+		item_LED = 5'b0;
+		COIN = 3'b111;
+		state = S0;
+		sclk = 0;
+		count = 0;
+		count_pad = 20'b0;
+		insert_en = 0;
+		col_finish = 0;
+		col_rst = 0;
+	 	collected = 32'b0;
+		col_temp = 0;
+		col_mod	= 0;
+		change = 32'b0;
+		ch_temp	= 0;
+		ch_mod = 0;
+		item = 3'b0;
+		amt	= 2'b01;
 	end
 	
 	
